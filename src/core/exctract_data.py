@@ -55,10 +55,10 @@ def extract_pdfs(files, directory, ws):
                 valor_pattern = r"\d{1,3}(?:\.\d{3})*,\d{2}\s*[DC]?"
 
 
-                if template == "BB_template_1":
+                if template == "BB_TEMPLATE_1":
                     bb_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente)
 
-                if template == "BB_template_2":
+                if template == "BB_TEMPLATE_2":
                     bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente)
 
             for registro in pdf_records:
