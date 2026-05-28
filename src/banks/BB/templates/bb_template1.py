@@ -111,45 +111,6 @@ def bb_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor_
                 
                 pos_data = line[data.end():].strip()
 
-                match_agOrigem = re.search(r"(\d{4})", pos_data)
-                if match_agOrigem:
-                    pos_ag = pos_data[match_agOrigem.end():].strip()
-                else:
-                    pos_ag = pos_data
-                    registro["Status"] = "Erro do matchOrigem"
-
-                match_Lote = re.search(r"(\d{5})", pos_ag)
-                if match_Lote:
-                    pos_Lote = pos_ag[match_Lote.end():].strip()
-                else:
-                    pos_Lote = pos_data
-                    registro["Status"] = "Erro do matchLote"
-
-                match_historico = re.search(r"\d{3}\s+(.+?)(?=\s+\d[\d.]*,\d{2})", pos_Lote)
-                
-                historico = ""
-
-                if match_historico:
-                    
-                    historico = match_historico.group(1).strip()
-
-                    next_line = lines[i+1] if i+1 < len(lines) else ""
-
-                    if not re.match(data_pattern, next_line) and not "http" in next_line:
-
-                        historico += " " + next_line.strip()
-
-                    registro["Histórico"] = historico
-                    
-                else:
-                    next_line = lines[i+1] if i+1 < len(lines) else ""
-
-
-                    if not re.match(data_pattern, next_line) and not "http" in next_line:
-                        historico = next_line.strip()
-                        
-                    registro["Histórico"] = historico
-
 
                 valor_inicio = valor_match.start()
 
@@ -162,6 +123,31 @@ def bb_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor_
                         break
 
                 registro["Dcto"] = documento
+
+                historico = ""
+                if documento:
+                    antes_doc = pos_data.rfind(documento)
+
+                    historico = pos_data[:antes_doc].strip()
+
+                    next_line = lines[i+1] if i+1 < len(lines) else ""
+
+                    if not re.match(data_pattern, next_line) and not "http" in next_line:
+
+                        historico += " " + next_line.strip()
+
+                    registro["Histórico"] = historico
+                else:
+
+                    next_line = lines[i+1] if i+1 < len(lines) else ""
+
+                    if not re.match(data_pattern, next_line) and not "http" in next_line:
+
+                        historico += " " + next_line.strip()
+
+                    registro["Histórico"] = historico
+
+
 
                 
 
