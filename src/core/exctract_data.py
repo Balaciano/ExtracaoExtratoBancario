@@ -25,12 +25,12 @@ def extract_pdfs(files, directory, ws):
 
             for page_num, page in enumerate(pdf.pages, start=1):
             
-                print(f"➡️ Processando página {page_num}/{len(pdf.pages)}")
+                print(f"Processando página {page_num}/{len(pdf.pages)}")
                 
                 text = page.extract_text()
                 tables = page.extract_tables()
                 
-
+                
                 if page_num == 1:
                     template_arquivo, banco_arquivo = identificador_template(text)
 
@@ -54,7 +54,7 @@ def extract_pdfs(files, directory, ws):
                 valor_pattern = r"\d{1,3}(?:\.\d{3})*,\d{2}\s*[DC]?"
 
 
-                if template == "BB_Template_1":
+                if template == "BB_template_1":
                     bb_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente)
 
             for registro in pdf_records:

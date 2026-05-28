@@ -3,6 +3,9 @@ import os
 from pathlib import Path
 from openpyxl import Workbook, load_workbook
 from core.exctract_data import extract_pdfs
+import sys
+
+sys.stdout.reconfigure(encoding='utf-8')
 
 
 inicio = time.time()
