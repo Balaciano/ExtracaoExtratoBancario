@@ -2,6 +2,7 @@ import pdfplumber
 from openpyxl import Workbook, load_workbook
 from core.identificador_template import identificador_template
 from banks.BB.templates.bb_template1 import bb_template1
+from banks.BB.templates.bb_template2 import bb_template2
 
 
 def extract_pdfs(files, directory, ws):
@@ -56,6 +57,9 @@ def extract_pdfs(files, directory, ws):
 
                 if template == "BB_template_1":
                     bb_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente)
+
+                if template == "BB_template_2":
+                    bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente)
 
             for registro in pdf_records:
                 ws.append(registro)

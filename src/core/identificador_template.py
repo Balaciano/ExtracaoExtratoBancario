@@ -18,6 +18,16 @@ def identificador_template(text):
             banco = "BB"
             return "BB_template_1", banco
         
+        if (
+            "LOTE" in line and
+            "AG. ORIGEM" in line and
+            "DOCUMENTO" in line and
+            "VALOR" in line and
+            "SALDO" in line
+        ):
+            banco = "BB"
+            return "BB_template_2", banco
+        
 
     return "TEMPLATE_DESCONHECIDO", "BANCO_DESCONHECIDO"
 
