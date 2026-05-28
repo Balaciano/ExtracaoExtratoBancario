@@ -7,7 +7,7 @@ from core.exctract_data import extract_pdfs
 
 inicio = time.time()
 
-leitura_directory = r""
+leitura_directory = r"C:\Users\jpez1\OneDrive\Área de Trabalho\Projeto_BD1\Extr-oExtratoBancario\Data\input"
 
 files = os.listdir(leitura_directory)
 
@@ -15,7 +15,7 @@ if not files:
     raise Exception("Nenhum arquivo encontrado nesse diretório")
 
 Excel_Output = Path(
-    r""
+    r"C:\Users\jpez1\OneDrive\Área de Trabalho\Projeto_BD1\Extr-oExtratoBancario\Data\output"
 ) / "Teste.xlsx"
 
 if os.path.exists(Excel_Output):

@@ -1,8 +1,7 @@
 import pdfplumber
 from openpyxl import Workbook, load_workbook
 from core.identificador_template import identificador_template
-from banks.Banco1.bancoQualquer import bancoqualquer
-
+from banks.BB.templates.bb_template1 import bb_template1
 
 
 def extract_pdfs(files, directory, ws):
@@ -54,13 +53,9 @@ def extract_pdfs(files, directory, ws):
                 data_pattern = r"^(\d{2}/\d{2}/\d{4})"
                 valor_pattern = r"\d{1,3}(?:\.\d{3})*,\d{2}\s*[DC]?"
 
-                """
-                if template == "CEF_TEMPLATE_1":
-                    cef_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente)
-                """
 
-                if template == "BancoQualquer":
-                    bancoqualquer()
+                if template == "BB_Template_1":
+                    bb_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente)
 
             for registro in pdf_records:
                 ws.append(registro)
