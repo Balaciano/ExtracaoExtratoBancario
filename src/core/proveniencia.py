@@ -22,8 +22,10 @@ def _info_git():
 
 class Proveniencia:
     def __init__(self, caminho_db):
-        self.conn = sqlite3.connect(str(caminho_db))
+        self.caminho_db = str(caminho_db)
+        self.conn = sqlite3.connect(self.caminho_db)
         self._criar_schema()
+        print(f"[proveniencia] banco pronto em: {self.caminho_db}")
 
     def _criar_schema(self):
         self.conn.execute(
@@ -87,6 +89,10 @@ class Proveniencia:
             ),
         )
         self.conn.commit()
+        print(
+            f"[proveniencia] execucao #{cur.lastrowid} registrada no banco "
+            f"(inicio) - {total_arquivos} arquivo(s) a processar"
+        )
         return cur.lastrowid
 
     def registrar_arquivo(self, execucao_id, nome_arquivo, banco, template,
@@ -111,6 +117,11 @@ class Proveniencia:
             ),
         )
         self.conn.commit()
+        print(
+            f"[proveniencia] arquivo '{nome_arquivo}' gravado no banco "
+            f"(execucao #{execucao_id}) - {status}: "
+            f"{total_registros} registro(s), {total_erros} erro(s)"
+        )
 
     def finalizar_execucao(self, execucao_id, duracao_segundos, total_sucesso,
                            total_com_erro, total_registros, status,
@@ -135,6 +146,11 @@ class Proveniencia:
             ),
         )
         self.conn.commit()
+        print(
+            f"[proveniencia] execucao #{execucao_id} finalizada no banco - "
+            f"{status} ({total_sucesso} sucesso, {total_com_erro} com erro, "
+            f"{total_registros} registro(s))"
+        )
 
     def fechar(self):
         self.conn.close()
