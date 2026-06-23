@@ -66,5 +66,28 @@ class Proveniencia:
         )
         self.conn.commit()
 
+    def iniciar_execucao(self, diretorio_input, arquivo_saida, total_arquivos):
+        commit, sujo = _info_git()
+        cur = self.conn.execute(
+            """
+            INSERT INTO execucao (
+                inicio, git_commit, git_sujo, versao_python,
+                diretorio_input, arquivo_saida, total_arquivos, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                datetime.now().isoformat(timespec="seconds"),
+                commit,
+                sujo,
+                platform.python_version(),
+                diretorio_input,
+                arquivo_saida,
+                total_arquivos,
+                "EM_ANDAMENTO",
+            ),
+        )
+        self.conn.commit()
+        return cur.lastrowid
+
     def fechar(self):
         self.conn.close()
