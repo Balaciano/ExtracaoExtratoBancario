@@ -89,5 +89,28 @@ class Proveniencia:
         self.conn.commit()
         return cur.lastrowid
 
+    def registrar_arquivo(self, execucao_id, nome_arquivo, banco, template,
+                          total_paginas, total_registros, total_erros, status):
+        self.conn.execute(
+            """
+            INSERT INTO arquivo_processado (
+                execucao_id, nome_arquivo, banco, template, total_paginas,
+                total_registros, total_erros, status, processado_em
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                execucao_id,
+                nome_arquivo,
+                banco,
+                template,
+                total_paginas,
+                total_registros,
+                total_erros,
+                status,
+                datetime.now().isoformat(timespec="seconds"),
+            ),
+        )
+        self.conn.commit()
+
     def fechar(self):
         self.conn.close()

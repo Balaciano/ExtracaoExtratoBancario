@@ -52,3 +52,39 @@ def test_iniciar_execucao_insere_e_retorna_id(tmp_path):
     assert linha[4]            # git_commit preenchido (hash ou 'indisponivel')
     assert linha[5]            # inicio preenchido
     assert linha[6] == "EM_ANDAMENTO"
+
+
+def test_registrar_arquivo_insere_linha(tmp_path):
+    db = tmp_path / "prov.db"
+    prov = Proveniencia(db)
+    execucao_id = prov.iniciar_execucao("/in", "/out.xlsx", 1)
+
+    prov.registrar_arquivo(
+        execucao_id=execucao_id,
+        nome_arquivo="Caixa2.pdf",
+        banco="CEF (CAIXA)",
+        template="CEF_TEMPLATE_1",
+        total_paginas=2,
+        total_registros=40,
+        total_erros=1,
+        status="PARCIAL",
+    )
+    prov.fechar()
+
+    conn = sqlite3.connect(str(db))
+    linha = conn.execute(
+        "SELECT execucao_id, nome_arquivo, banco, template, total_paginas, "
+        "total_registros, total_erros, status, processado_em "
+        "FROM arquivo_processado WHERE nome_arquivo='Caixa2.pdf'"
+    ).fetchone()
+    conn.close()
+
+    assert linha[0] == execucao_id
+    assert linha[1] == "Caixa2.pdf"
+    assert linha[2] == "CEF (CAIXA)"
+    assert linha[3] == "CEF_TEMPLATE_1"
+    assert linha[4] == 2
+    assert linha[5] == 40
+    assert linha[6] == 1
+    assert linha[7] == "PARCIAL"
+    assert linha[8]            # processado_em preenchido
