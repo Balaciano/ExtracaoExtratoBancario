@@ -1,7 +1,8 @@
 import re
+from core.error_excel import registrar_erro
 
 
-def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente):
+def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente, ws_erro):
     dentro_bloco = False
     cc = None
     transacao_num = 0
@@ -31,27 +32,70 @@ def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_
 
 
         if data:
-            achou = True
-            registro["Data"] = data.group()
+            try:
+                achou = True
+                registro["Data"] = data.group()
 
-            saldo_completo = None
-            valor_match = None
+                saldo_completo = None
+                valor_match = None
 
 
-            if "SALDO ANTERIOR" in line.upper() or "S A L D O" in line:
-                transacao_num+=1
+                if "SALDO ANTERIOR" in line.upper() or "S A L D O" in line:
+                    transacao_num+=1
 
-                valores = list(re.finditer(r"\d[\d.]*,\d{2}\s*[DC]?", line))
-            
+                    valores = list(re.finditer(r"\d[\d.]*,\d{2}\s*[DC]?", line))
+                
 
-                if valores:
-                    if len(valores) == 2:
-                        saldo_completo = valores[-1].group()
+                    if valores:
+                        if len(valores) == 2:
+                            saldo_completo = valores[-1].group()
 
-                        valor_match = valores[-2]
+                            valor_match = valores[-2]
 
-                    elif len(valores) == 1:
-                        saldo_completo = valores[-1].group()
+                        elif len(valores) == 1:
+                            saldo_completo = valores[-1].group()
+
+                        if saldo_completo:
+                            tipo_saldo = re.search(r"[DC]$", saldo_completo)
+                            registro["D/C Saldo"] = tipo_saldo.group() if tipo_saldo else ""
+                            saldo_final = re.sub(r"[DC]$", "", saldo_completo)
+                            registro["Saldo"] = saldo_final
+
+                        if valor_match:
+                            valor_completo = valor_match.group().strip()
+
+                            tipo_valor = re.search(r"[DC]$", valor_completo)
+                            registro["D/C Valor"] = tipo_valor.group() if tipo_valor else ""
+
+                            valor_final = re.sub(r"[DC]$", "", valor_completo)
+                            registro["Valor"] = valor_final
+                        
+
+                    pdf_records.append([
+                        registro.get("Data"),
+                        conta_corrente[0],
+                        "Saldo Anterior",
+                        None,
+                        registro.get("Valor"),
+                        registro.get("D/C Valor"),
+                        registro.get("Saldo"),
+                        registro.get("D/C Saldo"),
+                        banco,
+                        file,
+                        page_num,
+                        transacao_num,
+                        "BB Template 2"
+                    ])
+
+                else:
+                    transacao_num+=1
+                    valores = list(re.finditer(valor_pattern, line))
+
+                    if len(valores) >= 1:
+                        valor_match = valores[0]
+
+                    if len(valores) >= 2:
+                        saldo_completo = valores[1].group()
 
                     if saldo_completo:
                         tipo_saldo = re.search(r"[DC]$", saldo_completo)
@@ -62,116 +106,94 @@ def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_
                     if valor_match:
                         valor_completo = valor_match.group().strip()
 
-                        tipo_valor = re.search(r"[DC]$", valor_completo)
-                        registro["D/C Valor"] = tipo_valor.group() if tipo_valor else ""
+                        tipo = re.search(r"[DC]$", valor_completo)
+                        registro["D/C Valor"] = tipo.group() if tipo else ""
 
                         valor_final = re.sub(r"[DC]$", "", valor_completo)
                         registro["Valor"] = valor_final
-                    
 
-                pdf_records.append([
-                    registro.get("Data"),
-                    conta_corrente[0],
-                    "Saldo Anterior",
-                    None,
-                    registro.get("Valor"),
-                    registro.get("D/C Valor"),
-                    registro.get("Saldo"),
-                    registro.get("D/C Saldo"),
+                
+
+                    
+                    pos_data = line[data.end():].strip()
+
+
+                    valor_inicio = valor_match.start()
+
+                    antes_valor = line[:valor_inicio].strip().split()
+
+                    documento = None
+                    for token in reversed(antes_valor):
+                        if re.fullmatch(r"\d+(\.\d+)*", token):
+                            documento = token
+                            break
+
+                    registro["Dcto"] = documento
+
+                    historico = ""
+                    if documento:
+                        antes_doc = pos_data.rfind(documento)
+
+                        historico = pos_data[:antes_doc].strip()
+
+                        next_line = lines[i+1] if i+1 < len(lines) else ""
+
+                        if not re.match(data_pattern, next_line) and not "http" in next_line:
+
+                            historico += " " + next_line.strip()
+
+                        registro["Histórico"] = historico
+                    else:
+
+                        next_line = lines[i+1] if i+1 < len(lines) else ""
+
+                        if not re.match(data_pattern, next_line) and not "http" in next_line:
+
+                            historico += " " + next_line.strip()
+
+                        registro["Histórico"] = historico
+
+
+                    pdf_records.append([
+                        registro.get("Data"),
+                        conta_corrente[0],
+                        registro.get("Histórico"),
+                        registro.get("Dcto"),
+                        registro.get("Valor"),
+                        registro.get("D/C Valor"),
+                        registro.get("Saldo"),
+                        registro.get("D/C Saldo"), 
+                        banco,
+                        file,
+                        page_num,
+                        transacao_num,
+                        "BB Template 2"
+                    ])
+
+            except Exception as e:
+                print(f"Erro na linha de transacao {transacao_num}:{e}")
+                registrar_erro(
+                    ws_erro,
                     banco,
                     file,
                     page_num,
                     transacao_num,
-                    "BB Template 2"
-                ])
-
-            else:
-                transacao_num+=1
-                valores = list(re.finditer(valor_pattern, line))
-
-                if len(valores) >= 1:
-                    valor_match = valores[0]
-
-                if len(valores) >= 2:
-                    saldo_completo = valores[1].group()
-
-                if saldo_completo:
-                    tipo_saldo = re.search(r"[DC]$", saldo_completo)
-                    registro["D/C Saldo"] = tipo_saldo.group() if tipo_saldo else ""
-                    saldo_final = re.sub(r"[DC]$", "", saldo_completo)
-                    registro["Saldo"] = saldo_final
-
-                if valor_match:
-                    valor_completo = valor_match.group().strip()
-
-                    tipo = re.search(r"[DC]$", valor_completo)
-                    registro["D/C Valor"] = tipo.group() if tipo else ""
-
-                    valor_final = re.sub(r"[DC]$", "", valor_completo)
-                    registro["Valor"] = valor_final
-
-            
-
-                
-                pos_data = line[data.end():].strip()
-
-
-                valor_inicio = valor_match.start()
-
-                antes_valor = line[:valor_inicio].strip().split()
-
-                documento = None
-                for token in reversed(antes_valor):
-                    if re.fullmatch(r"\d+(\.\d+)*", token):
-                        documento = token
-                        break
-
-                registro["Dcto"] = documento
-
-                historico = ""
-                if documento:
-                    antes_doc = pos_data.rfind(documento)
-
-                    historico = pos_data[:antes_doc].strip()
-
-                    next_line = lines[i+1] if i+1 < len(lines) else ""
-
-                    if not re.match(data_pattern, next_line) and not "http" in next_line:
-
-                        historico += " " + next_line.strip()
-
-                    registro["Histórico"] = historico
-                else:
-
-                    next_line = lines[i+1] if i+1 < len(lines) else ""
-
-                    if not re.match(data_pattern, next_line) and not "http" in next_line:
-
-                        historico += " " + next_line.strip()
-
-                    registro["Histórico"] = historico
-
-
-                
-                
-                    
-                
-
-
-
-
+                    line,
+                    e
+                )
                 pdf_records.append([
-                    registro.get("Data"),
-                    conta_corrente[0],
-                    registro.get("Histórico"),
-                    registro.get("Dcto"),
-                    registro.get("Valor"),
-                    registro.get("D/C Valor"),
-                    registro.get("Saldo"),
-                    registro.get("D/C Saldo"), 
+                    None,                               
+                    conta_corrente[0],                  
+                    "ERRO PROCESSAMENTO",                                   None,                               
+                    None,                               
+                    None,                               
+                    None,                               
+                    None,                               
                     banco,
                     file,
                     page_num,
                     transacao_num,
-                    "BB Template 2"
+                    "ERRO",
+                    line
                 ])
+        

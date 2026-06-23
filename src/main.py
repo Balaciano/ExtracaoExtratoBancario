@@ -42,7 +42,7 @@ else:
 
 
 
-extract_pdfs(files, leitura_directory, ws)
+extract_pdfs(files, leitura_directory, ws, ws_erro)
 
 
 
