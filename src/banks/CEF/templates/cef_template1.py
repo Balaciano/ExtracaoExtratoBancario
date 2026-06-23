@@ -2,6 +2,7 @@ import re
 
 def cef_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente):
     cc = None
+    transacao_num = 0
 
     for i, line in enumerate(lines):
         registro = {}
@@ -14,6 +15,7 @@ def cef_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor
         data = re.match(r"^\d{2}/\d{2}/\d{4}(?!,)(?!\s+\d{2}:\d{2}:\d{2})", line)
 
         if data:
+            transacao_num+=1
             registro["Data"] = data.group()
 
             saldo_completo = None
@@ -81,6 +83,6 @@ def cef_template1(lines, pdf_records, banco, file, page_num, data_pattern, valor
                     banco,
                     file,
                     page_num,
-                    i,
+                    transacao_num,
                     "CEF Template 1"
                 ])

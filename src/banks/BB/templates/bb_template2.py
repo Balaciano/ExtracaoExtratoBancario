@@ -4,6 +4,7 @@ import re
 def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_pattern, conta_corrente):
     dentro_bloco = False
     cc = None
+    transacao_num = 0
 
     for i, line in enumerate(lines):
         registro = {}
@@ -38,6 +39,7 @@ def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_
 
 
             if "SALDO ANTERIOR" in line.upper() or "S A L D O" in line:
+                transacao_num+=1
 
                 valores = list(re.finditer(r"\d[\d.]*,\d{2}\s*[DC]?", line))
             
@@ -79,11 +81,12 @@ def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_
                     banco,
                     file,
                     page_num,
-                    i,
+                    transacao_num,
                     "BB Template 2"
                 ])
 
             else:
+                transacao_num+=1
                 valores = list(re.finditer(valor_pattern, line))
 
                 if len(valores) >= 1:
@@ -169,6 +172,6 @@ def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_
                     banco,
                     file,
                     page_num,
-                    i,
+                    transacao_num,
                     "BB Template 2"
                 ])
