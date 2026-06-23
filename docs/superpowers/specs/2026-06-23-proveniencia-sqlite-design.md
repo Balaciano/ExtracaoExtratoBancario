@@ -98,6 +98,10 @@ se git indisponível, retorna `("indisponivel", 0)`.
 - `src/main.py`: instancia `Proveniencia`, chama `iniciar_execucao` antes da
   extração e `finalizar_execucao` num bloco `try/finally` (registra mesmo em
   caso de exceção do run).
+  - **Correção de passagem:** os caminhos fixos de input/output (hoje apontando
+    para `C:\Users\jpez1\...`) passam a ser derivados da raiz do projeto via
+    `pathlib.Path(__file__)`, funcionando em qualquer máquina. O `.db` de
+    proveniência usa a mesma raiz (`Data/proveniencia.db`).
 - `src/core/exctract_data.py`: `extract_pdfs` recebe o objeto `prov` e o
   `execucao_id`, e chama `prov.registrar_arquivo(...)` ao terminar cada PDF,
   usando os contadores que o loop já calcula (páginas, registros, erros). Também
@@ -117,6 +121,11 @@ segue. O Excel permanece como saída principal.
 - `registrar_arquivo` insere linha vinculada à execução;
 - `finalizar_execucao` atualiza agregados e status;
 - caso de git indisponível grava `"indisponivel"` sem lançar exceção.
+
+## No escopo (correção de passagem)
+
+- Substituir os caminhos absolutos fixos em `src/main.py` por caminhos relativos
+  à raiz do projeto (`pathlib.Path`), para o sistema rodar em qualquer máquina.
 
 ## Fora de escopo
 
