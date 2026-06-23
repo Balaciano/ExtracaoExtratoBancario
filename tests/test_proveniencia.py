@@ -1,5 +1,6 @@
 import sqlite3
 from core.proveniencia import Proveniencia
+from core import proveniencia as prov_mod
 
 
 def _tabelas(caminho_db):
@@ -88,3 +89,45 @@ def test_registrar_arquivo_insere_linha(tmp_path):
     assert linha[6] == 1
     assert linha[7] == "PARCIAL"
     assert linha[8]            # processado_em preenchido
+
+
+def test_finalizar_execucao_atualiza_agregados(tmp_path):
+    db = tmp_path / "prov.db"
+    prov = Proveniencia(db)
+    execucao_id = prov.iniciar_execucao("/in", "/out.xlsx", 2)
+
+    prov.finalizar_execucao(
+        execucao_id=execucao_id,
+        duracao_segundos=12.5,
+        total_sucesso=1,
+        total_com_erro=1,
+        total_registros=40,
+        status="SUCESSO_PARCIAL",
+        mensagem_erro=None,
+    )
+    prov.fechar()
+
+    conn = sqlite3.connect(str(db))
+    linha = conn.execute(
+        "SELECT fim, duracao_segundos, total_sucesso, total_com_erro, "
+        "total_registros, status FROM execucao WHERE id=?",
+        (execucao_id,),
+    ).fetchone()
+    conn.close()
+
+    assert linha[0]            # fim preenchido
+    assert linha[1] == 12.5
+    assert linha[2] == 1
+    assert linha[3] == 1
+    assert linha[4] == 40
+    assert linha[5] == "SUCESSO_PARCIAL"
+
+
+def test_info_git_indisponivel_nao_lanca(monkeypatch):
+    def _falha(*args, **kwargs):
+        raise FileNotFoundError("git não encontrado")
+
+    monkeypatch.setattr(prov_mod.subprocess, "run", _falha)
+    commit, sujo = prov_mod._info_git()
+    assert commit == "indisponivel"
+    assert sujo == 0

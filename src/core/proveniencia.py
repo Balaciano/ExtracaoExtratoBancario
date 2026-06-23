@@ -112,5 +112,29 @@ class Proveniencia:
         )
         self.conn.commit()
 
+    def finalizar_execucao(self, execucao_id, duracao_segundos, total_sucesso,
+                           total_com_erro, total_registros, status,
+                           mensagem_erro=None):
+        self.conn.execute(
+            """
+            UPDATE execucao
+            SET fim = ?, duracao_segundos = ?, total_sucesso = ?,
+                total_com_erro = ?, total_registros = ?, status = ?,
+                mensagem_erro = ?
+            WHERE id = ?
+            """,
+            (
+                datetime.now().isoformat(timespec="seconds"),
+                duracao_segundos,
+                total_sucesso,
+                total_com_erro,
+                total_registros,
+                status,
+                mensagem_erro,
+                execucao_id,
+            ),
+        )
+        self.conn.commit()
+
     def fechar(self):
         self.conn.close()
