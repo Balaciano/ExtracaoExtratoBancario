@@ -6,6 +6,7 @@ def identificador_template(text):
 
 
     for i, line in enumerate(lines):
+        # ============== BB (BANCO DO BRASIL) ======================
         if ("LANÇAMENTOS") in line:
 
             next_lineBB = lines[i+1] if i < len(lines) else ""
@@ -37,6 +38,23 @@ def identificador_template(text):
                     banco = "BB"
                     return "BB_TEMPLATE_2", banco
         
+        # ============== CEF (CAIXA) ======================
+        if (
+        "PERÍODO" in line and
+        "DE:" in line and
+        "ATÉ:" in line
+        ):
+            next_lineCEF = lines[i+1] if i < len(lines) else ""
+
+            if (
+                "DATA MOV" in next_lineCEF and
+                "NR. DOC." in next_lineCEF and
+                "HISTÓRICO" in next_lineCEF and
+                "VALOR" in next_lineCEF and
+                "SALDO" in next_lineCEF 
+            ):
+                banco = "CEF (CAIXA)"
+                return "CEF_TEMPLATE_1", banco
         
 
     return "TEMPLATE_DESCONHECIDO", "BANCO_DESCONHECIDO"

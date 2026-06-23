@@ -8,7 +8,7 @@ def bb_template2(lines, pdf_records, banco, file, page_num, data_pattern, valor_
     for i, line in enumerate(lines):
         registro = {}
 
-        print(line)
+        #print(line)
         
         if "AGÊNCIA" in line.upper():
             dentro_bloco = True
